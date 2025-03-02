@@ -171,8 +171,6 @@ public class AdminHomepageController {
         }
     }
     
-    
-    
     @FXML
     private void refreshDashboardTable() { 
         userList.setAll(AdminService.getAllUsers()); 
@@ -301,7 +299,6 @@ public class AdminHomepageController {
         }
     }
 
-
     
     // 🎀🎀🎀 ROUTES MANAGER
     @FXML
@@ -396,8 +393,6 @@ public class AdminHomepageController {
         routesManagerTable.refresh(); 
     }
 }
-
-
 
     // 🎀🎀🎀 PLANNED DRIVES
     @FXML
@@ -502,7 +497,7 @@ public class AdminHomepageController {
         AccMngrTable.setItems(filteredList);
     }
 
-    private void filterUsersRoutes(String searchRouteID) {
+    private void filterUsersRoutes(String searchRouteID) { // 🔍 SEARCH FEATURE IN ROUTES MANAGER
         ObservableList<AdminRoutes> filteredList = savedRoutesList.filtered(user ->
         String.valueOf(user.getAccountID()).contains(searchRouteID)
 
@@ -510,7 +505,7 @@ public class AdminHomepageController {
     routesManagerTable.setItems(filteredList);
 }
 
-    private void filterUsersPlannedDrive (String searchID) { // 🔍 SEARCH FUNCTION IN ROUTES MANAGER
+    private void filterUsersPlannedDrive (String searchID) { // 🔍 SEARCH FEATURE IN PLANNED DRIVES MANAGER
         ObservableList<AdminPlannedDrives> filteredList = plannedDrivesList.filtered(user ->
             String.valueOf(user.getPlannedDriveID()).contains(searchID)
         );

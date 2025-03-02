@@ -91,7 +91,12 @@ public class AccountSettingsController implements Initializable {
     @FXML
     private void handleSaveAccountDetails(ActionEvent event) {
         if (validateInput()) {
-            // Only update fields that have changed
+            String email = emailField.getText().trim();
+    
+            if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
+                showErrorAlert("Please input a valid Email. Only Gmail and Yahoo addresses are allowed.");
+                return; 
+            }
             if (!usernameField.getText().isEmpty()) {
                 currentUser.setUsername(usernameField.getText());
             }
@@ -110,17 +115,17 @@ public class AccountSettingsController implements Initializable {
             if (birthdayPicker.getValue() != null) {
                 currentUser.setBirthDate(birthdayPicker.getValue().toString());
             }
-            
+    
             boolean success = AdminService.updateUser(currentUser);
             if (success) {
                 showSuccessAlert("Account details updated successfully!");
-                // Update prompt text to reflect changes
                 updatePromptText();
             } else {
                 showErrorAlert("Failed to update account details");
             }
         }
     }
+    
     
     private void updatePromptText() {
         usernameField.setPromptText("Username: " + currentUser.getUsername());
@@ -184,8 +189,6 @@ public class AccountSettingsController implements Initializable {
         }
         return true;
     }
-    
-    // Removed duplicate setUserData method
     
     @FXML
     private void handleImageUpload() {

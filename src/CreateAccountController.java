@@ -24,26 +24,22 @@ public class CreateAccountController {
         String lastname = lastnameTF.getText().trim();
         String birthdate = (birthdatePicker.getValue() != null) ? birthdatePicker.getValue().toString() : "";
 
-        // Validate inputs
         if (username.isEmpty() || password.isEmpty() || email.isEmpty() || birthdate.isEmpty()) {
             showError("Please fill in all fields.");
             return;
         }
 
-        // Validate email format
         if (!isValidEmail(email)) {
             showError("Please enter a valid email address (must be @gmail.com or @yahoo.com).");
             return;
         }
 
-        // Insert user into database
         if (dbHandler.insertUser(username, password, email, birthdate, firstname, lastname)) {
             showSuccessPopup(); // Call success pop-up
         } else {
             showError("User already exists or database error occurred.");
         }
     }
-
 
     @FXML 
     public void backtoSignInButton(ActionEvent event) throws IOException {
@@ -54,7 +50,6 @@ public class CreateAccountController {
             stage.setScene(new Scene(loginRoot));
             stage.setTitle("Login");
             stage.show();
-
     }
 
     private boolean isValidEmail(String email) {
@@ -77,7 +72,6 @@ public class CreateAccountController {
             }
         });
     }
-
     private void goToLoginPage() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Login.fxml"));
@@ -91,7 +85,6 @@ public class CreateAccountController {
             e.printStackTrace();
         }
     }
-
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

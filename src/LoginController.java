@@ -32,14 +32,11 @@ public class LoginController {
         if (DatabaseHandler.validateLogin(username, password)) {
             DatabaseHandler.updateLastLogin(username);
     
-            // ✅ Fetch account ID from database
             int accountId = UserDatabaseHandler.getUserId(username);
             String role = username.equalsIgnoreCase("admin") ? "ADMIN" : "USER";
     
-            // ✅ Store logged-in user in UserService
             UserService.getInstance().setCurrentUser(accountId, username, role);
-    
-            // ✅ Load the correct homepage (Admin or User)
+ 
             FXMLLoader loader;
             if (role.equals("ADMIN")) {
                 loader = new FXMLLoader(getClass().getResource("AdminHomepage.fxml")); // Admin Homepage
@@ -52,8 +49,7 @@ public class LoginController {
             stage.setScene(new Scene(root));
             stage.show();
     
-            // ✅ Set user data based on the loaded FXML
-            if (role.equals("ADMIN")) {
+            if (role.equals("ADMIN")) { //sets logged in users data sa next page
                 AdminHomepageController adminController = loader.getController();
                 adminController.setUsername(username, adminService.loadProfilePicture(username));
                 adminController.setCurrentUser(username);
@@ -66,8 +62,6 @@ public class LoginController {
         }
     }
     
-
-
     @FXML
     private void createbuttonhandler(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateAcc.fxml"));

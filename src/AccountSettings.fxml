@@ -15,9 +15,9 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #14cdff;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="AccountSettingsController">
    <children>
-      <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="52.0" prefWidth="900.0" style="-fx-background-color: white; -fx-border-color: lightgrey; -fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3);">
+      <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="52.0" prefWidth="900.0" style="-fx-background-color: white; -fx-border-color: lightgrey; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 15, 0.2, 0, 4);">
          <children>
-            <MenuButton fx:id="menuBTN" layoutX="725.0" layoutY="5.0" mnemonicParsing="false" prefHeight="43.0" prefWidth="159.0" style="-fx-background-color: WHITE;" text="admin" textAlignment="RIGHT">
+            <MenuButton fx:id="menuBTN" layoutX="725.0" layoutY="5.0" mnemonicParsing="false" prefHeight="43.0" prefWidth="159.0" style="-fx-background-color: WHITE;" textAlignment="RIGHT">
                <items>
                   <MenuItem fx:id="backToHomepageBTN" mnemonicParsing="false" onAction="#handleBackToHomepage" text="Back to Homepage" />
                   <MenuItem fx:id="SignOutBTN" mnemonicParsing="false" onAction="#handleSignOut" text="Sign Out" />
@@ -25,7 +25,7 @@
                <graphic>
                   <ImageView fx:id="accountSettingsImageView2" fitHeight="37.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@res/1%20-%20pfp.png" />
+                        <Image url="@res/PFP/PFP/blankpfp.jpg" />
                      </image>
                   </ImageView>
                </graphic>
@@ -33,9 +33,9 @@
                   <Font name="Segoe UI Black" size="15.0" />
                </font>
             </MenuButton>
-            <ImageView fitHeight="31.0" fitWidth="117.0" layoutX="48.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="52.0" fitWidth="121.0" layoutX="48.0" layoutY="-2.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@res/waze-logo-png_seeklogo-263049-removebg-preview-removebg-preview.png" />
+                  <Image url="@res/PFP/PFP/X.jpg" />
                </image>
             </ImageView>
             <ImageView fitHeight="51.0" fitWidth="45.0" layoutX="3.0" layoutY="1.0" pickOnBounds="true" preserveRatio="true">
@@ -45,8 +45,13 @@
             </ImageView>
          </children>
       </AnchorPane>
-      <AnchorPane layoutX="178.0" layoutY="143.0" prefHeight="393.0" prefWidth="550.0" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3); -fx-background-radius: 20px;">
+      <AnchorPane layoutX="178.0" layoutY="143.0" prefHeight="393.0" prefWidth="550.0" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 15, 0.2, 0, 4); -fx-background-radius: 20px;">
          <children>
+            <Button fx:id="deleteAccountButton" layoutX="231.0" layoutY="339.0" mnemonicParsing="false" onAction="#handleDeleteAccount" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0.2, 0, 4);; -fx-background-color: #cc0000;" text="Delete Account" textFill="WHITE">
+               <font>
+                  <Font name="Segoe UI Bold" size="15.0" />
+               </font>
+            </Button>
             <TextField fx:id="emailField" layoutX="87.0" layoutY="133.0" onAction="#initializeAccountDetails" prefHeight="31.0" prefWidth="181.0" style="-fx-effect: innershadow(gaussian, rgba(170, 170, 170, 0.5), 5, 0.0, 2, 2);" />
             <TextField fx:id="usernameField" layoutX="86.0" layoutY="203.0" prefHeight="31.0" prefWidth="182.0" style="-fx-effect: innershadow(gaussian, rgba(170, 170, 170, 0.5), 5, 0.0, 2, 2);" />
             <TextField fx:id="firstNameField" layoutX="302.0" layoutY="133.0" prefHeight="31.0" prefWidth="182.0" style="-fx-effect: innershadow(gaussian, rgba(170, 170, 170, 0.5), 5, 0.0, 2, 2);" />
@@ -57,38 +62,38 @@
                <children>
                   <ImageView fx:id="accountSettingsImageView1" fitHeight="103.0" fitWidth="101.0" pickOnBounds="true" preserveRatio="true" style="-fx-blend-mode: multiply;" styleClass="circle-container">
                      <image>
-                        <Image url="@res/1%20-%20pfp.png" />
+                        <Image url="@res/PFP/PFP/blankpfp.jpg" />
                      </image>
                   </ImageView>
                </children>
             </StackPane>
-            <Button layoutX="132.0" layoutY="46.0" mnemonicParsing="false" onAction="#handleImageUpload" prefHeight="26.0" prefWidth="70.0" style="-fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3);" text="Upload" />
-            <Label layoutX="86.0" layoutY="250.0" text="Password:">
+            <Button layoutX="132.0" layoutY="46.0" mnemonicParsing="false" onAction="#handleImageUpload" prefHeight="26.0" prefWidth="70.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1); -fx-background-color: #e6e6e6; -fx-border-color: lightgrey;" text="Upload" />
+            <Label layoutX="86.0" layoutY="250.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="Password:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="86.0" layoutY="180.0" text="Username:">
+            <Label layoutX="86.0" layoutY="180.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="Username:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="302.0" layoutY="180.0" text="Last Name:">
+            <Label layoutX="302.0" layoutY="180.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="Last Name:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="302.0" layoutY="250.0" text="Birthday:">
+            <Label layoutX="302.0" layoutY="250.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="Birthday:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="86.0" layoutY="114.0" text="E-mail:">
+            <Label layoutX="86.0" layoutY="114.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="E-mail:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="301.0" layoutY="114.0" style="-fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3);" text="First Name:">
+            <Label layoutX="301.0" layoutY="114.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0.2, 1, 1);" text="First Name:">
                <font>
                   <Font name="Segoe UI Bold" size="12.0" />
                </font></Label>
-            <Label layoutX="208.0" layoutY="50.0" style="-fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3);" text="Min. Size 128 x 128px (PNG or JPEG/JPG)" />
-            <Button fx:id="deleteAccountButton" layoutX="231.0" layoutY="339.0" mnemonicParsing="false" onAction="#handleDeleteAccount" style="-fx-effect: dropshadow(gaussian, rgba(136, 136, 136, 0.5), 10, 0.0, 3, 3); -fx-background-color: #FF5733;" text="Delete Account" textFill="WHITE">
+            <Label layoutX="208.0" layoutY="50.0" opacity="0.8" style="-fx-background-color: #e6e6e6;" text="Min. Size 128 x 128px (PNG or JPEG/JPG)" />
+            <Button fx:id="saveButton" layoutX="230.0" layoutY="337.0" mnemonicParsing="false" onAction="#handleSaveAccountDetails" prefHeight="31.0" prefWidth="130.0" style="-fx-background-color: #0095FF;" text="Save changes" textFill="WHITE">
                <font>
                   <Font name="Segoe UI Bold" size="15.0" />
                </font>
@@ -100,10 +105,5 @@
             <Font name="Segoe UI Black" size="30.0" />
          </font>
       </Label>
-      <Button fx:id="saveButton" layoutX="672.0" layoutY="103.0" mnemonicParsing="false" onAction="#handleSaveAccountDetails" style="-fx-background-color: white; -fx-border-color: lightgrey;" text="Save">
-         <font>
-            <Font name="Segoe UI Bold" size="15.0" />
-         </font>
-      </Button>
    </children>
 </AnchorPane>

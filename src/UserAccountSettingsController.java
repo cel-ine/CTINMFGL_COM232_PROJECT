@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,7 +33,8 @@ public class UserAccountSettingsController implements Initializable {
     @FXML private ImageView accountSettingsImageView;
     @FXML private MenuButton menuBTN;
     @FXML private MenuItem SignOutBTN;
-    
+    @FXML private Button saveButton;
+
     private final AdminService adminService = new AdminService();
     private String loggedInUsername;
     private String imagePath;
@@ -49,6 +51,35 @@ public class UserAccountSettingsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         System.out.println("FXML loaded, currentUser: " + currentUser);
+        initializeSaveButtonBehavior();
+    }
+    private void initializeSaveButtonBehavior() { //FOR SAVE BUTTON EFFECT
+        saveButton.getStyleClass().add("light-button"); // Set initial style
+        saveButton.setDisable(true); // Initially disabled
+    
+        ChangeListener<String> textListener = (observable, oldValue, newValue) -> {
+            if (!usernameField.getText().trim().isEmpty() ||
+                !emailField.getText().trim().isEmpty() ||
+                !passwordField.getText().trim().isEmpty() ||
+                !firstNameField.getText().trim().isEmpty() ||
+                !lastNameField.getText().trim().isEmpty()) {
+                
+                saveButton.getStyleClass().remove("light-button");
+                saveButton.getStyleClass().add("dark-button");
+                saveButton.setDisable(false);
+            } else {
+                saveButton.getStyleClass().remove("dark-button");
+                saveButton.getStyleClass().add("light-button");
+                saveButton.setDisable(true);
+            }
+        };
+    
+        // Attach listener to all text fields
+        usernameField.textProperty().addListener(textListener);
+        emailField.textProperty().addListener(textListener);
+        passwordField.textProperty().addListener(textListener);
+        firstNameField.textProperty().addListener(textListener);
+        lastNameField.textProperty().addListener(textListener);
     }
             
     public void setUserData(int accountId, String username, String imagePath) {
@@ -75,41 +106,45 @@ public class UserAccountSettingsController implements Initializable {
         }
     }
     
-            
-            public void initializeAccountDetails() {
-                System.out.println("1. Entering initializeAccountDetails");
-                if (currentUser != null) {
-                    System.out.println("2. Current user: " + currentUser);
-                    System.out.println("3. User is not null, setting text fields");
-                    System.out.println("4. Username from database: " + currentUser.getUsername());
+    public void initializeAccountDetails() {
+        System.out.println("1. Entering initializeAccountDetails");
+        if (currentUser != null) {
+            System.out.println("2. Current user: " + currentUser);
+            System.out.println("3. User is not null, setting text fields");
+            System.out.println("4. Username from database: " + currentUser.getUsername());
                     
-                    usernameField.setPromptText("Username: " + currentUser.getUsername());
-                    usernameField.setText(currentUser.getUsername());
-                    emailField.setPromptText("Email: " + currentUser.getEmail());
-                    emailField.setText(currentUser.getEmail());
-                    passwordField.setPromptText("Password: " + currentUser.getPassword());
-                    passwordField.setText(currentUser.getPassword());
-                    firstNameField.setPromptText("First Name: " + currentUser.getFirstName());
-                    firstNameField.setText(currentUser.getFirstName());
-                    lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
-                    lastNameField.setText(currentUser.getLastName());
-                    birthdayPicker.setValue(LocalDate.parse(currentUser.getBirthDate()));
+            usernameField.setPromptText("Username: " + currentUser.getUsername());
+            usernameField.setText(currentUser.getUsername());
+            emailField.setPromptText("Email: " + currentUser.getEmail());
+            emailField.setText(currentUser.getEmail());
+            passwordField.setPromptText("Password: " + currentUser.getPassword());
+            passwordField.setText(currentUser.getPassword());
+            firstNameField.setPromptText("First Name: " + currentUser.getFirstName());
+            firstNameField.setText(currentUser.getFirstName());
+            lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
+            lastNameField.setText(currentUser.getLastName());
+            birthdayPicker.setValue(LocalDate.parse(currentUser.getBirthDate()));
                     
-                    System.out.println("5. Text field values after setting:");
-                    System.out.println("   Username: " + usernameField.getText());
-                    System.out.println("   Email: " + emailField.getText());
-                    System.out.println("   Password: " + passwordField.getText());
-                    System.out.println("   First Name: " + firstNameField.getText());
-                    System.out.println("   Last Name: " + lastNameField.getText());
-                } else {
-                    System.out.println("3. User is null!");
-                }
-            }
+            System.out.println("5. Text field values after setting:");
+            System.out.println("   Username: " + usernameField.getText());
+            System.out.println("   Email: " + emailField.getText());
+            System.out.println("   Password: " + passwordField.getText());
+            System.out.println("   First Name: " + firstNameField.getText());
+            System.out.println("   Last Name: " + lastNameField.getText());
+        } else {
+            System.out.println("3. User is null!");
+        }
+    }
             
     @FXML
     private void handleSaveAccountDetails(ActionEvent event) {
         if (validateInput()) {
-                    
+            String email = emailField.getText().trim();
+    
+            if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
+                showErrorAlert("Please input a valid Email. Only Gmail and Yahoo addresses are allowed.");
+                return; 
+            }            
             if (!usernameField.getText().isEmpty()) {
                         currentUser.setUsername(usernameField.getText());
             }
@@ -184,18 +219,18 @@ public class UserAccountSettingsController implements Initializable {
             Parent root = loader.load();
             UserHomepageController homepageController = loader.getController();
 
-            // ✅ Retrieve stored username from UserService
+            //stored username from UserService
             int accountId = UserService.getInstance().getCurrentUserId();
             String username = UserService.getInstance().getCurrentUsername();
             
             if (username == null) {
-                System.out.println("❌ ERROR: Username is NULL! Using default 'user'.");
+                System.out.println("ERROR: Username is NULL! Using default 'user'.");
                 username = "user";
             }
 
             String latestImagePath = UserService.loadProfilePicture(username);
             
-            System.out.println("🔄 [Back to Homepage] Passing -> Account ID: " + accountId 
+            System.out.println("[Back to Homepage] Passing -> Account ID: " + accountId 
                 + ", Username: " + username + ", Image Path: " + latestImagePath);
 
             homepageController.setUserData(accountId, username, latestImagePath);
@@ -208,8 +243,6 @@ public class UserAccountSettingsController implements Initializable {
         }
     }
 
-        
-            
     public int getAccountId() {
         return accountId;
     }
@@ -221,47 +254,46 @@ public class UserAccountSettingsController implements Initializable {
         }
         return true;
     }
-        
-        
-        @FXML
-        private void handleImageUpload() {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
-            File file = fileChooser.showOpenDialog(null);
-            if (file != null) {
-                String imagePath = file.toURI().toString();
-                // Save to database
-                boolean success = adminService.saveProfilePicture(loggedInUsername, imagePath);
-                if (success) {
-                    // Update ImageView in Account Settings
-                    Image newImage = new Image(imagePath);
-                    accountSettingsImageView1.setImage(newImage);
-                    accountSettingsImageView2.setImage(newImage);
-                    // Notify Admin Homepage to update its images
-                    if (userHomepageController != null) {
-                        userHomepageController.setUserData(userHomepageController.getAccountId(), loggedInUsername, imagePath); // ✅ Correct
-                    }                    
-                    }
-                } else {
-                    System.out.println("Failed to update profile picture in database.");
-                }
+          
+    @FXML
+    private void handleImageUpload() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            String imagePath = file.toURI().toString();
+            // Save to database
+            boolean success = adminService.saveProfilePicture(loggedInUsername, imagePath);
+        if (success) {
+            // Update ImageView in Account Settings
+            Image newImage = new Image(imagePath);
+            accountSettingsImageView1.setImage(newImage);
+            accountSettingsImageView2.setImage(newImage);
+            // Notify Admin Homepage to update its images
+        if (userHomepageController != null) {
+            userHomepageController.setUserData(userHomepageController.getAccountId(), loggedInUsername, imagePath); // ✅ Correct
+        }                    
+    }
+        } else {
+            System.out.println("Failed to update profile picture in database.");
         }
+    }
         
-        private void showSuccessAlert(String message) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setContentText(message);
-            alert.showAndWait();
-        }
+    private void showSuccessAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
         
-        private void showErrorAlert(String message) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setContentText(message);
-            alert.showAndWait();
-        }
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
         
-        public void setUserHomepageController(UserHomepageController userHomepageController) {
+    public void setUserHomepageController(UserHomepageController userHomepageController) {
             this.userHomepageController = userHomepageController;
     }
 }

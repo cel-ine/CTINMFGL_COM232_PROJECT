@@ -4,12 +4,11 @@ import java.time.LocalTime;
 public class AdminPlannedDrives {
     private int plannedDriveID;
     private int account_id;
-    private LocalDate plannedDate;  // Use LocalDate instead of String
-    private LocalTime plannedTime;  // Use LocalTime instead of String
+    private LocalDate plannedDate;  
+    private LocalTime plannedTime;  
     private String startLoc;
     private String pinnedLoc; 
 
-    // Constructor
     public AdminPlannedDrives(int plannedDriveID, int account_id, LocalDate plannedDate, LocalTime plannedTime, String startLoc, String pinnedLoc) {
         this.plannedDriveID = plannedDriveID;
         this.account_id = account_id;
@@ -28,7 +27,6 @@ public class AdminPlannedDrives {
         this.pinnedLoc = pinnedLoc;
     }
 
-    // Getters
     public int getPlannedDriveID() {
         return plannedDriveID;
     }
@@ -37,11 +35,11 @@ public class AdminPlannedDrives {
         return account_id;
     }
 
-    public LocalDate getPlannedDate() {  // Updated to LocalDate
+    public LocalDate getPlannedDate() {  
         return plannedDate;
     }
 
-    public LocalTime getPlannedTime() {  // Updated to LocalTime
+    public LocalTime getPlannedTime() {  
         return plannedTime;
     }
 
@@ -53,7 +51,6 @@ public class AdminPlannedDrives {
         return pinnedLoc;
     }
 
-    // Setters
     public void setPlannedDriveID(int plannedDriveID) {
         this.plannedDriveID = plannedDriveID;
     }

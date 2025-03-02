@@ -43,14 +43,14 @@ public class AddPlannedDrivePopupController {
             }
         });
         
-        populateMilitaryTimeList(); // Load all times
+        populateMilitaryTimeList();
     }
 
     private void populateMilitaryTimeList() {
         LocalTime time = LocalTime.MIDNIGHT;
-        while (!time.equals(LocalTime.of(23, 59).plusMinutes(1))) { // Until 23:59
-            timeList.add(time.format(timeFormatter)); // 24-hour format
-            time = time.plusMinutes(1); // Increment by 1 minute
+        while (!time.equals(LocalTime.of(23, 59).plusMinutes(1))) { 
+            timeList.add(time.format(timeFormatter)); 
+            time = time.plusMinutes(1); 
         }
     }
 

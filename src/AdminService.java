@@ -51,7 +51,6 @@ public class AdminService {
         return DatabaseHandler.addUser(newUser);
     }
 
-
     //ROUTE MANAGER METHODS FOR TABLE & DATABASE HANDLING
     public static ObservableList<AdminRoutes> getAllRoutes() {
         return DatabaseHandler.displayUserRoutes();
@@ -108,14 +107,14 @@ public class AdminService {
             int rowsUpdated = stmt.executeUpdate();
     
             if (rowsUpdated > 0) {
-                System.out.println("✅ Profile picture updated successfully.");
+                System.out.println("Profile picture updated successfully.");
                 return true;
             } else {
-                System.out.println("❌ No matching user found for username: " + username);
+                System.out.println("No matching user found for username: " + username);
                 return false;
             }
         } catch (SQLException e) {
-            System.out.println("❌ SQL Exception: " + e.getMessage());
+            System.out.println("SQL Exception: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -140,14 +139,12 @@ public class AdminService {
                 );
             }
         } catch (SQLException e) {
-            System.out.println("❌ Error fetching user: " + e.getMessage());
+            System.out.println("Error fetching user: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
     }
     
-    
-
     public String loadProfilePicture(String username) {
         String query = "SELECT profile_picture FROM WazeAccounts WHERE username = ?";
         try (Connection conn = DatabaseHandler.getConnection();

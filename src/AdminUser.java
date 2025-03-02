@@ -9,8 +9,7 @@ public class AdminUser {
     private String birthday;
     private String lastLogIn; 
     private String oldUsername;
-
-    // Constructor for regular users
+    //constructor
     public AdminUser(int acc_id, String email, String username, String password, String birthday,  String firstname, String lastname ) {
         this.acc_id = acc_id;
         this.username = username;
