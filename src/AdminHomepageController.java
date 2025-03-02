@@ -65,20 +65,18 @@ public class AdminHomepageController {
     @FXML private TableColumn<AdminPlannedDrives, LocalTime> pdPlannedTimeCol;
     @FXML private TextField searchPlannedDrivesTF;
     
-    @SuppressWarnings("unused")
     private String loggedInUsername; 
     private ObservableList<AdminUser> userList = FXCollections.observableArrayList(); //DASHBOARD
     private ObservableList<AdminUser> accountsList = FXCollections.observableArrayList(); //ACCOUNTS
     private ObservableList<AdminRoutes> savedRoutesList = FXCollections.observableArrayList(); //ROUTES
     private ObservableList<AdminPlannedDrives> plannedDrivesList = FXCollections.observableArrayList(); //PLANNED DRIVES
 
-    @SuppressWarnings("unused")
     private final AdminService adminService = new AdminService();
+
 
     @FXML
     public void initialize() {  
         showPane(MainPane); 
-
 
         Platform.runLater(() -> { 
             Scene scene = parentAnchorPane.getScene();
@@ -140,10 +138,9 @@ public class AdminHomepageController {
         TableEditor.makePlannedDrivesTableEditable(pdPinnedLocCol, pdStartLocCol, pdCalendarCol, pdPlannedTimeCol); 
         plannedDrivesManagerTable.setEditable(true);
         searchPlannedDrivesTF.textProperty().addListener((observable, oldValue, newValue) -> filterUsersPlannedDrive(newValue));
-
         loadPlannedDrivesData();
     }
-        @SuppressWarnings("unused")
+
         private String imagePath; 
 
         public void setUsername(String username, String imagePath) {
@@ -494,9 +491,6 @@ public class AdminHomepageController {
             showAlert("Warning", "No planned drive selected for update.", Alert.AlertType.WARNING);
         }
     }
-
-
-
 
     private void filterUsers(String searchText) { // 🔍 SEARCH FUNCTION IN ACC MANAGER
         ObservableList<AdminUser> filteredList = accountsList.filtered(user ->

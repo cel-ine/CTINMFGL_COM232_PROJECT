@@ -46,24 +46,35 @@ public class UserAccountSettingsController implements Initializable {
     }
     
             
-            @Override
-            public void initialize(URL url, ResourceBundle resourceBundle) {
-                System.out.println("FXML loaded, currentUser: " + currentUser);
-            }
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        System.out.println("FXML loaded, currentUser: " + currentUser);
+    }
             
-            public void setUserData(int accountId, String username, String imagePath) {
-                this.loggedInUsername = username;
-                this.imagePath = imagePath;
-                menuBTN.setText(username);
-                if (imagePath != null && !imagePath.isEmpty()) {
-                    Image newImage = new Image(imagePath);
-                    accountSettingsImageView1.setImage(newImage);
-                    accountSettingsImageView2.setImage(newImage);
-                }
-                // Initialize currentUser here
-                currentUser = adminService.getUserByUsername(username);
-                initializeAccountDetails();
-            }
+    public void setUserData(int accountId, String username, String imagePath) {
+        this.accountId = accountId;
+        this.loggedInUsername = username;
+        this.imagePath = imagePath;
+        
+        menuBTN.setText(username); // Update menu button text
+    
+        if (imagePath != null && !imagePath.isEmpty()) {
+            Image newImage = new Image(imagePath);
+            accountSettingsImageView1.setImage(newImage);
+            accountSettingsImageView2.setImage(newImage);
+        }
+    
+        // Fetch user details from database
+        currentUser = adminService.getUserByUsername(username);
+        
+        if (currentUser == null) {
+            System.out.println("❌ ERROR: User is NULL! Fetching failed.");
+        } else {
+            System.out.println("✅ User successfully fetched: " + currentUser.getUsername());
+            initializeAccountDetails();
+        }
+    }
+    
             
             public void initializeAccountDetails() {
                 System.out.println("1. Entering initializeAccountDetails");
@@ -95,116 +106,122 @@ public class UserAccountSettingsController implements Initializable {
                 }
             }
             
-            @FXML
-            private void handleSaveAccountDetails(ActionEvent event) {
-                if (validateInput()) {
-                    // Only update fields that have changed
-                    if (!usernameField.getText().isEmpty()) {
-                        currentUser.setUsername(usernameField.getText());
-                    }
-                    if (!emailField.getText().isEmpty()) {
-                        currentUser.setEmail(emailField.getText());
-                    }
-                    if (!passwordField.getText().isEmpty()) {
-                        currentUser.setPassword(passwordField.getText());
-                    }
-                    if (!firstNameField.getText().isEmpty()) {
-                        currentUser.setFirstName(firstNameField.getText());
-                    }
-                    if (!lastNameField.getText().isEmpty()) {
-                        currentUser.setLastName(lastNameField.getText());
-                    }
-                    if (birthdayPicker.getValue() != null) {
-                        currentUser.setBirthDate(birthdayPicker.getValue().toString());
-                    }
+    @FXML
+    private void handleSaveAccountDetails(ActionEvent event) {
+        if (validateInput()) {
                     
-                    boolean success = AdminService.updateUser(currentUser);
-                    if (success) {
-                        showSuccessAlert("Account details updated successfully!");
+            if (!usernameField.getText().isEmpty()) {
+                        currentUser.setUsername(usernameField.getText());
+            }
+            if (!emailField.getText().isEmpty()) {
+                        currentUser.setEmail(emailField.getText());
+            }
+            if (!passwordField.getText().isEmpty()) {
+                        currentUser.setPassword(passwordField.getText());
+            }
+            if (!firstNameField.getText().isEmpty()) {
+                        currentUser.setFirstName(firstNameField.getText());
+            }
+            if (!lastNameField.getText().isEmpty()) {
+                        currentUser.setLastName(lastNameField.getText());
+            }
+            if (birthdayPicker.getValue() != null) {
+                        currentUser.setBirthDate(birthdayPicker.getValue().toString());
+            }
+                    
+            boolean success = AdminService.updateUser(currentUser);
+            if (success) {
+                showSuccessAlert("Account details updated successfully!");
                         // Update prompt text to reflect changes
-                        updatePromptText();
-                    } else {
-                        showErrorAlert("Failed to update account details");
-                    }
-                }
+                    updatePromptText();
+            } else {
+                showErrorAlert("Failed to update account details");
             }
+        }
+    }
             
-            private void updatePromptText() {
-                usernameField.setPromptText("Username: " + currentUser.getUsername());
-                emailField.setPromptText("Email: " + currentUser.getEmail());
-                passwordField.setPromptText("Password: " + currentUser.getPassword());
-                firstNameField.setPromptText("First Name: " + currentUser.getFirstName());
-                lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
-            }
+    private void updatePromptText() {
+        usernameField.setPromptText("Username: " + currentUser.getUsername());
+        emailField.setPromptText("Email: " + currentUser.getEmail());
+        passwordField.setPromptText("Password: " + currentUser.getPassword());
+        firstNameField.setPromptText("First Name: " + currentUser.getFirstName());
+        lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
+    }
             
-            @FXML
-            private void handleDeleteAccount(ActionEvent event) throws IOException {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Confirm Delete");
-                alert.setHeaderText("Are you sure you want to delete your account?");
-                alert.setContentText("This action cannot be undone.");
-                Optional<ButtonType> result = alert.showAndWait();
+    @FXML
+        private void handleDeleteAccount(ActionEvent event) throws IOException {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Delete");
+            alert.setHeaderText("Are you sure you want to delete your account?");
+            alert.setContentText("This action cannot be undone.");
+            Optional<ButtonType> result = alert.showAndWait();
                 
-                if (result.isPresent() && result.get() == ButtonType.OK) {
-                    if (AdminService.deleteUser(currentUser.getAccID())) {
-                        showSuccessAlert("Account deleted successfully!");
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                if (AdminService.deleteUser(currentUser.getAccID())) {
+                    showSuccessAlert("Account deleted successfully!");
                         handleSignOut(event);
-                    } else {
+            } else {
                         showErrorAlert("Failed to delete account");
-                    }
                 }
             }
+        }
             
-            @FXML
-            public void handleSignOut(ActionEvent event) throws IOException {
-                Stage stage = (Stage) menuBTN.getScene().getWindow();
-                stage.close();
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("Login.fxml"));
-                Parent root = loader.load();
-                Stage signInStage = new Stage();
-                signInStage.setScene(new Scene(root));
-                signInStage.show();
+    @FXML
+    public void handleSignOut(ActionEvent event) throws IOException {
+        Stage stage = (Stage) menuBTN.getScene().getWindow();
+        stage.close();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Login.fxml"));
+            Parent root = loader.load();
+            Stage signInStage = new Stage();
+            signInStage.setScene(new Scene(root));
+            signInStage.show();
+        }
+            
+        @FXML
+    private void handleBackToHomepageUser(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserHomepage.fxml"));
+            Parent root = loader.load();
+            UserHomepageController homepageController = loader.getController();
+
+            // ✅ Retrieve stored username from UserService
+            int accountId = UserService.getInstance().getCurrentUserId();
+            String username = UserService.getInstance().getCurrentUsername();
+            
+            if (username == null) {
+                System.out.println("❌ ERROR: Username is NULL! Using default 'user'.");
+                username = "user";
             }
+
+            String latestImagePath = UserService.loadProfilePicture(username);
             
-            @FXML
-            private void handleBackToHomepageUser(ActionEvent event) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("UserHomepage.fxml"));
-                    Parent root = loader.load();
-                    UserHomepageController homepageController = loader.getController();
-            
-                    // ✅ Get the correct user data from UserService
-                    int accountId = UserService.getInstance().getCurrentUserId();
-                    String username = UserService.getInstance().getCurrentUserRole().equals("ADMIN") ? "admin" : "user";
-                    String latestImagePath = adminService.loadProfilePicture(username);
-            
-                    System.out.println("🔄 [Back to Homepage] Passing Account ID: " + accountId);
-            
-                    // ✅ Pass the user data
-                    homepageController.setUserData(accountId, username, latestImagePath);
-            
-                    // ✅ Switch scene
-                    Stage stage = (Stage) menuBTN.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                    stage.show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            System.out.println("🔄 [Back to Homepage] Passing -> Account ID: " + accountId 
+                + ", Username: " + username + ", Image Path: " + latestImagePath);
+
+            homepageController.setUserData(accountId, username, latestImagePath);
+
+            Stage stage = (Stage) menuBTN.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+        
             
     public int getAccountId() {
         return accountId;
     }
         
-        private boolean validateInput() {
-            if (passwordField.getText().isEmpty()) {
-                showErrorAlert("Password cannot be empty");
-                return false;
-            }
-            return true;
+    private boolean validateInput() {
+        if (passwordField.getText().isEmpty()) {
+            showErrorAlert("Password cannot be empty");
+            return false;
         }
+        return true;
+    }
         
-        // Removed duplicate setUserData method
         
         @FXML
         private void handleImageUpload() {

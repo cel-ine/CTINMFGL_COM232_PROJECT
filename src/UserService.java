@@ -7,11 +7,15 @@ import javafx.collections.ObservableList;
 
 public class UserService {
     private static UserService instance;
-    private int currentUserId = 0;  // Default to 0 (no user logged in)
+    private int currentUserId = 0; 
     private String currentUserRole = null;
-    
-    // Private constructor for Singleton
+    private String currentUsername;
+
     private UserService() {}
+
+    private UserService(int accountId, String email, String username, String password, String birthdate, String firstName, String lastName) {
+
+    }
 
     // Thread-safe Singleton
     public static synchronized UserService getInstance() {
@@ -21,11 +25,13 @@ public class UserService {
         return instance;
     }
 
-    public void setCurrentUser(int userId, String role) {
+    public void setCurrentUser(int userId, String username, String role) {
         this.currentUserId = userId;
+        this.currentUsername = username;  // ✅ Store username
         this.currentUserRole = role;
-        System.out.println("✅ [UserService] User set: ID=" + userId + ", Role=" + role);
+        System.out.println("✅ [UserService] User set: ID=" + userId + ", Username=" + username + ", Role=" + role);
     }
+    
     
     public int getCurrentUserId() {
         System.out.println("🔍 [UserService] Fetching Account ID: " + currentUserId);
@@ -33,25 +39,27 @@ public class UserService {
     }
     
 
-    // ✅ Get current user role
     public String getCurrentUserRole() {
         return currentUserRole;
     }
 
-    // ✅ Check if user is logged in
     public boolean isLoggedIn() {
         return currentUserId > 0;
     }
 
-    // ✅ Logout user
     public void logout() {
         currentUserId = 0;  // Reset to 0 instead of null
         currentUserRole = null;
         System.out.println("🚪 [UserService] User logged out.");
     }
+    public String getCurrentUsername() {
+        return currentUsername;
+    }
 
+    public void setCurrentUsername(String currentUsername) {
+        this.currentUsername = currentUsername;
+    }
 
-    // Route Management
     public static ObservableList<UserRouteDetails> getUserRoutes(int accountId) {
         return UserDatabaseHandler.getInstance().getUserRouteDetails(accountId);
     }
@@ -143,7 +151,7 @@ public class UserService {
         }
     }
     //THIS IS TO FETCH USERS DETAILS
-    public static AdminUser getUserByUsername(String username) {
+    public static UserAccount getUserByUsername(String username) {
         String query = "SELECT * FROM WazeAccounts WHERE username = ?";
         try (Connection conn = DatabaseHandler.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -151,12 +159,12 @@ public class UserService {
             ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                return new AdminUser(
+                return new UserAccount( // ✅ Return a UserAccount object, not UserService
                     rs.getInt("account_id"),
                     rs.getString("email"),
                     rs.getString("username"),
                     rs.getString("passwords"),
-                    rs.getString("birthdate"),
+                    rs.getDate("birthdate"),
                     rs.getString("first_name"),
                     rs.getString("last_name")
                 );
@@ -167,6 +175,7 @@ public class UserService {
         }
         return null;
     }
+    
     
     public static String loadProfilePicture(String username) {
         String query = "SELECT profile_picture FROM WazeAccounts WHERE username = ?";

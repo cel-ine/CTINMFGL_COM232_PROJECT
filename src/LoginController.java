@@ -37,7 +37,7 @@ public class LoginController {
             String role = username.equalsIgnoreCase("admin") ? "ADMIN" : "USER";
     
             // ✅ Store logged-in user in UserService
-            UserService.getInstance().setCurrentUser(accountId, role);
+            UserService.getInstance().setCurrentUser(accountId, username, role);
     
             // ✅ Load the correct homepage (Admin or User)
             FXMLLoader loader;

@@ -23,16 +23,6 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-// import java.sql.Date;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
-
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,11 +31,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.print.DocFlavor.URL;
 
 public class UserHomepageController {
     //MAIN PANE 
@@ -75,8 +62,6 @@ public class UserHomepageController {
     @FXML private TableColumn<UserPlannedDrives, String> startLocCol, pinnedLocCol;
     @FXML private TableColumn<UserPlannedDrives, Date> planCalendar;
     @FXML private TableColumn<UserPlannedDrives, Time> planTime;
- 
-    private ObservableList<String> locationList = FXCollections.observableArrayList(); 
 
     private int accountId;
     private UserAccount currentUser;
@@ -87,6 +72,8 @@ public class UserHomepageController {
     public void setCurrentUser(UserAccount user) {
         this.currentUser = user;
     }
+    private String loggedInUsername;
+    private ObservableList<String> locationList = FXCollections.observableArrayList(); 
     private ObservableList<UserRouteDetails> routeList = FXCollections.observableArrayList(); // ROUTES TABLE 
     private ObservableList<UserPlannedDrives> plannedList = FXCollections.observableArrayList(); //PLANNED DRIVES TABLE
 
@@ -95,21 +82,17 @@ public class UserHomepageController {
         showPane(homePane);
         startDateTimeUpdater();
         loadMap();
-          // ✅ Fetch the logged-in user from UserService
-    int accountId = UserService.getInstance().getCurrentUserId();
-    System.out.println("📌 [UserHomepage] Loaded with Account ID: " + accountId);
+          
+        int accountId = UserService.getInstance().getCurrentUserId();
+        System.out.println("📌 [UserHomepage] Loaded with Account ID: " + accountId);
 
-    // ✅ Prevent resetting to 0
-    if (accountId == 0) {
-        System.err.println("⚠️ ERROR: Account ID is 0! Check login flow.");
-    }
+        if (accountId == 0) {
+            System.err.println("⚠️ ERROR: Account ID is 0! Check login flow.");
+        }
 
-    // ✅ Use accountId to load user-specific data
         loadPlannedDrives(accountId);
         loadUserRoutes(accountId);
-
         loadLocations();
-
         loadTimes();
         
         Platform.runLater(() -> { //to display the username logged in to menu item 
@@ -148,7 +131,6 @@ public class UserHomepageController {
         loadPlannedDrives();
     }
 
-    private String loggedInUsername;
     private String imagePath; 
 
     public void setUsername(String username, String imagePath) {
@@ -161,6 +143,25 @@ public class UserHomepageController {
             userHomepageImage2.setImage(profileImage);
         }
     }
+    public void updateProfilePicture(String imagePath) {
+        Image newImage = new Image(imagePath);
+        userHomepageImage1.setImage(newImage);
+        userHomepageImage2.setImage(newImage);
+    }    
+    public void setUserData(int accountId, String username, String imagePath) {
+        this.accountId = accountId; //SAVES THE USER'S ACC ID 
+        this.loggedInUsername = username;
+        menuBTN.setText(username); 
+        System.out.println("🏠 [Homepage] Received -> Account ID: " + accountId 
+    + ", Username: " + loggedInUsername + ", Image Path: " + imagePath);
+
+        if (imagePath != null && !imagePath.isEmpty()) {
+            Image newImage = new Image(imagePath);
+            userHomepageImage1.setImage(newImage);
+            userHomepageImage2.setImage(newImage);
+        }
+    }
+
     private void loadPlannedDrives(int accountId) {
         plannedList.setAll(UserService.getUserPlannedDrives(accountId));
         planneddrivesTable.refresh();
@@ -177,26 +178,7 @@ public class UserHomepageController {
         WebEngine webEngine = mapWebView.getEngine();
         webEngine.load("https://www.waze.com/live-map/");
     }
-    
 
-    public void updateProfilePicture(String imagePath) {
-        Image newImage = new Image(imagePath);
-        userHomepageImage1.setImage(newImage);
-        userHomepageImage2.setImage(newImage);
-    }    
-
-    public void setUserData(int accountId, String username, String imagePath) {
-        this.accountId = accountId; //SAVES THE USER'S ACC ID 
-        this.loggedInUsername = username;
-        menuBTN.setText(username); 
-        System.out.println("✅ [DEBUG] Received Account ID in UserHomepage: " + accountId);
-
-        if (imagePath != null && !imagePath.isEmpty()) {
-            Image newImage = new Image(imagePath);
-            userHomepageImage1.setImage(newImage);
-            userHomepageImage2.setImage(newImage);
-        }
-    }
     //GETTER FOR ACC ID PARA FETCH NI USERHOMEPAGE
     public int getAccountId() {
         return accountId;
@@ -252,18 +234,21 @@ public class UserHomepageController {
             Parent root = loader.load();
             UserAccountSettingsController settingsController = loader.getController();
 
+            // ✅ Store user data before switching scenes
+            UserService.getInstance().setCurrentUser(accountId, loggedInUsername, UserService.getInstance().getCurrentUserRole());
+
             String latestImagePath = UserService.loadProfilePicture(loggedInUsername);
-
             settingsController.setUserData(accountId, loggedInUsername, latestImagePath);
-            settingsController.setUserHomepageController(this); 
+            settingsController.setUserHomepageController(this);
 
-            Stage stage = (Stage) menuBTN.getScene().getWindow(); 
+            Stage stage = (Stage) menuBTN.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     // 🎀🎀🎀 ROUTE CRUD
     @FXML
@@ -574,8 +559,11 @@ public class UserHomepageController {
 
         stage.hide();
     }
+    public void setCurrentUser(String username) {
+        this.loggedInUsername = username;
+        menuBTN.setText(username); 
 
-   
+    }
 }
 
 
