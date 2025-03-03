@@ -33,7 +33,6 @@ public class AddRoutesPopupController {
         String selectedEnd = endPointCombobox.getValue();
         String selectedStopOver = stopOverCombobox.getValue();
 
-        // Validation: Ensure required fields are selected
         if (selectedEntry == null || selectedEntry.trim().isEmpty() ||
             selectedStart == null || selectedStart.trim().isEmpty() ||
             selectedEnd == null || selectedEnd.trim().isEmpty()) {
@@ -41,7 +40,12 @@ public class AddRoutesPopupController {
             showAlert("Error", "Please choose user, start location, and end location.", Alert.AlertType.ERROR);
             return;
         }
-
+    
+        if (selectedStart.equalsIgnoreCase(selectedEnd)) {
+            showAlert("Error", "Start and end locations cannot be the same.", Alert.AlertType.ERROR);
+            return;
+        }
+        
         String[] parts = selectedEntry.split(" - ");
         int accountID;
         try {

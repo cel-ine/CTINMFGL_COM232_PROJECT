@@ -153,75 +153,73 @@ public class UserDatabaseHandler {
         String insertQuery = "INSERT INTO WazePlannedDrives (account_id, planned_date, planned_time, start_loc, pinned_loc) VALUES (?, ?, ?, ?, ?)";
     
         try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
-            insertStmt.setInt(1, accountId); // ✅ Assign the correct account ID
-            insertStmt.setDate(2, java.sql.Date.valueOf(date.plusDays(1))); // ✅ planned_date
-            insertStmt.setTime(3, inputTime); // ✅ planned_time
-            insertStmt.setString(4, startLoc); // ✅ start_loc
-            insertStmt.setString(5, endLoc); // ✅ pinned_loc
+            insertStmt.setInt(1, accountId); 
+            insertStmt.setDate(2, java.sql.Date.valueOf(date.plusDays(1))); 
+            insertStmt.setTime(3, inputTime); 
+            insertStmt.setString(4, startLoc);
+            insertStmt.setString(5, endLoc); 
     
             insertStmt.executeUpdate();
     
-            getPlannedDrives(accountId); // ✅ Refresh the list of planned drives for this user
-            System.out.println("✅ Planned drive created successfully for Account ID: " + accountId);
+            getPlannedDrives(accountId); 
+            System.out.println("Planned drive created successfully for Account ID: " + accountId);
             return true;
     
         } catch (SQLException e) {
-            System.err.println("❌ Error adding planned drive: " + e.getMessage());
+            System.err.println("Error adding planned drive: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
     
-
     //💗💗💗 ROUTES TABLE DISPLAY
-    //💗💗💗 ROUTES TABLE DISPLAY
-public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
-    ObservableList<UserRouteDetails> routes = FXCollections.observableArrayList();
-    UserDatabaseHandler handler = UserDatabaseHandler.getInstance();
-    Connection connection = UserDatabaseHandler.getConnection();
+    public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
+        ObservableList<UserRouteDetails> routes = FXCollections.observableArrayList();
+        UserDatabaseHandler handler = UserDatabaseHandler.getInstance();
+        Connection connection = UserDatabaseHandler.getConnection();
 
-    if (connection == null || UserDatabaseHandler.isConnectionClosed()) {
-        System.out.println("⚠ Failed to fetch routes: No database connection.");
-        return routes; // Return empty list if no connection
-    }
-
-    String query = """
-        SELECT 
-            wr.route_id,
-            wr.account_id,
-            wr.route_startpoint,
-            wr.route_endpoint,
-            wat.alt_routes,
-            wat.stop_overloc,
-            wtt.est_time
-        FROM WazeRoutes wr
-        LEFT JOIN WazeAltRoutes wat ON wr.route_id = wat.route_id
-        LEFT JOIN WazeTravelTime wtt ON wr.route_id = wtt.route_id
-        WHERE wr.account_id = ?;
-    """; 
-
-    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-        stmt.setInt(1, accountId); //passing the account id sa query 
-
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            routes.add(new UserRouteDetails(
-                rs.getInt("account_id"),
-                rs.getString("route_id"),
-                rs.getString("route_startpoint"),
-                rs.getString("route_endpoint"),
-                rs.getString("alt_routes"),
-                rs.getString("stop_overloc"),
-                rs.getString("est_time")
-            ));
+        if (connection == null || UserDatabaseHandler.isConnectionClosed()) {
+            System.out.println("⚠ Failed to fetch routes: No database connection.");
+            return routes; // Return empty list if no connection
         }
-        System.out.println("Fetched " + routes.size() + " routes for account ID: " + accountId);
-    } catch (SQLException e) {
-        System.err.println("Error displaying user's saved routes: " + e.getMessage());
-        e.printStackTrace();
+
+        String query = """
+            SELECT 
+                wr.route_id,
+                wr.account_id,
+                wr.route_startpoint,
+                wr.route_endpoint,
+                wat.alt_routes,
+                wat.stop_overloc,
+                wtt.est_time
+            FROM WazeRoutes wr
+            LEFT JOIN WazeAltRoutes wat ON wr.route_id = wat.route_id
+            LEFT JOIN WazeTravelTime wtt ON wr.route_id = wtt.route_id
+            WHERE wr.account_id = ?;
+        """; 
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, accountId); //passing the account id sa query 
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                routes.add(new UserRouteDetails(
+                    rs.getInt("account_id"),
+                    rs.getString("route_id"),
+                    rs.getString("route_startpoint"),
+                    rs.getString("route_endpoint"),
+                    rs.getString("alt_routes"),
+                    rs.getString("stop_overloc"),
+                    rs.getString("est_time")
+                ));
+            }
+            System.out.println("Fetched " + routes.size() + " routes for account ID: " + accountId);
+        } catch (SQLException e) {
+            System.err.println("Error displaying user's saved routes: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return routes;
     }
-    return routes;
-}
 
     //💗💗💗 PLANNED DRIVES TABLE DISPLAY
     public ObservableList<UserPlannedDrives> getPlannedDrives(int accountId) {
@@ -628,15 +626,10 @@ public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
         }
         return false;
     }
-    
-    // Add Routes
-    // +
-    
 
+    
     // Updates last login time for a user
     public static void updateLastLogin(String username) {
-        // ❌ ERROR: Query string is split incorrectly, causing a syntax issue
-        // FIX: Ensure the query is written as a single continuous string
         String query = "UPDATE WazeAccounts SET last_login = NOW() WHERE Username = ?";
 
         try (PreparedStatement stmt = UserDatabaseHandler.getInstance().getConnection().prepareStatement(query)) {
@@ -697,8 +690,6 @@ public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
         return accountId;
     }
     
-
-
     //FOR USER ACCOUNT'S DELETE AND UPDATE ❗❗❗
     public static boolean updateUserDetails(UserAccount user) {
         String updateQuery = "UPDATE wazeaccounts SET email = ?, username = ?, passwords = ?, first_name = ?, last_name = ?, birthdate = ? WHERE account_id = ?";
@@ -710,8 +701,8 @@ public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
             stmt.setString(3, user.getPassword());
             stmt.setString(4, user.getFirstName());
             stmt.setString(5, user.getLastName());
+            stmt.setString(6, user.getBirthdate().toString());
             
-            // Convert LocalDate to SQL Date
             LocalDate birthdate = user.getBirthdate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             stmt.setDate(6, java.sql.Date.valueOf(birthdate));
     
@@ -733,7 +724,7 @@ public ObservableList<UserRouteDetails> getUserRouteDetails(int accountId) {
             return false;
         }
     
-        String deleteQuery = "DELETE FROM WazeAccounts WHERE account_id = ?";
+        String deleteQuery = "DELETE FROM WazeAccounts WHERE username = ?,  account_id = ?";
     
         try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery)) {
             deleteStmt.setInt(1, userId);

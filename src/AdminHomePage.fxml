@@ -193,7 +193,7 @@
             </AnchorPane>
          </children>
       </StackPane>
-      <StackPane fx:id="accountManagerPane" layoutX="198.0" layoutY="51.0" prefHeight="548.0" prefWidth="700.0" visible="false">
+      <StackPane fx:id="accountManagerPane" layoutX="198.0" layoutY="51.0" prefHeight="548.0" prefWidth="700.0">
          <children>
             <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="547.0" prefWidth="694.0">
                <children>
@@ -249,7 +249,7 @@
             </AnchorPane>
          </children>
       </StackPane>
-      <StackPane fx:id="routesManagerPane" layoutX="200.0" layoutY="53.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="547.0" prefWidth="701.0">
+      <StackPane fx:id="routesManagerPane" layoutX="200.0" layoutY="53.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="547.0" prefWidth="701.0" visible="false">
          <children>
             <AnchorPane prefHeight="526.0" prefWidth="682.0">
                <children>

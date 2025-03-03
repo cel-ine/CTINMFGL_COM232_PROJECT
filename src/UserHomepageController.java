@@ -168,8 +168,7 @@ public class UserHomepageController {
     }
 
     private void loadUserRoutes(int accountId) {
-        // Implement the logic to load user routes based on the accountId
-        // For example:
+ 
         routeList.setAll(UserService.getUserRoutes(accountId));
         routeTable.refresh();
     }
@@ -234,7 +233,7 @@ public class UserHomepageController {
             Parent root = loader.load();
             UserAccountSettingsController settingsController = loader.getController();
 
-            // ✅ Store user data before switching scenes
+            // store user data before switching scenes
             UserService.getInstance().setCurrentUser(accountId, loggedInUsername, UserService.getInstance().getCurrentUserRole());
 
             String latestImagePath = UserService.loadProfilePicture(loggedInUsername);
@@ -258,31 +257,48 @@ public class UserHomepageController {
         String selectedStopOverLoc = stopOverLoc.getValue();
 
         if (start == null || end == null) {
-            showAlert("Input Error", "Start Location and End Location must be selected.", AlertType.ERROR);
+            showAlert("Input Error", "Start Location and End Location must be selected.", Alert.AlertType.ERROR);
+            return;
+        }
+
+        if (start.equalsIgnoreCase(end)) {
+            showAlert("Invalid Selection", "Start and End locations cannot be the same.", Alert.AlertType.WARNING);
             return;
         }
 
         if (accountId == 0) {
-            showAlert("Error", "User account ID is not set. Please log in again.", AlertType.ERROR);
+            showAlert("Error", "User account ID is not set. Please log in again.", Alert.AlertType.ERROR);
             return;
         }
+
+        ObservableList<String> observableLocationList = UserService.getAllLocations();
+        if (observableLocationList == null || observableLocationList.isEmpty()) {
+            showAlert("Error", "Location list is empty or not loaded. Please try again.", Alert.AlertType.ERROR);
+            return;
+        }
+        List<String> locationList = FXCollections.observableArrayList(observableLocationList);
 
         System.out.println("Account ID: " + accountId);
 
         String alternativeRoute = RouteIDGenerator.generateRandomAlternativeRoute(start, end, locationList);
-        UserRouteDetails newRoute = new UserRouteDetails (accountId, start, end, alternativeRoute, selectedStopOverLoc);
+        UserRouteDetails newRoute = new UserRouteDetails(accountId, start, end, alternativeRoute, selectedStopOverLoc);
 
         boolean success = UserService.addUserRoute(accountId, newRoute, locationList);
+        if (success) {
 
-        ObservableList<String> observableLocationList = UserService.getAllLocations(); // Get ObservableList
-        List<String> locationList = FXCollections.observableArrayList(observableLocationList); // Convert to List
-        UserDatabaseHandler.addRoutes(accountId, newRoute, locationList);
-        loadRoutes();
+            loadRoutes();
+            showSuccessPopup();
 
-        showSuccessPopup();
+            startLoc.setValue(null);
+            endLoc.setValue(null);
+            stopOverLoc.setValue(null);
+        } else {
+            showAlert("Error", "Failed to add route. Please try again.", Alert.AlertType.ERROR);
+        }
     }
-        private void showSuccessPopup() {
-            showAlert("Success", "Route Saved successfully!", Alert.AlertType.INFORMATION);
+
+    private void showSuccessPopup() {
+        showAlert("Success", "Route Saved successfully!", Alert.AlertType.INFORMATION);
     }
 
     @FXML
@@ -294,13 +310,21 @@ public class UserHomepageController {
             return;
         }
 
-        String newStartPoint = startCol.getCellData(selectedRoute); 
-        String newEndPoint = endCol.getCellData(selectedRoute); 
-        String newStopOver = stopOverRouteLoc.getCellData(selectedRoute); 
+        routeTable.edit(-1, null);
+        routeTable.refresh();
+
+        String newStartPoint = selectedRoute.getStartPoint();
+        String newEndPoint = selectedRoute.getEndPoint();
+        String newStopOver = selectedRoute.getStopOverLocation();
 
         if (newStartPoint == null || newEndPoint == null || newStopOver == null ||
             newStartPoint.isEmpty() || newEndPoint.isEmpty() || newStopOver.isEmpty()) {
             showAlert("Invalid Input", "Start point, end point, and stopover cannot be empty.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        if (newStartPoint.equalsIgnoreCase(newEndPoint)) {
+            showAlert("Invalid Selection", "Start and End locations cannot be the same.", Alert.AlertType.WARNING);
             return;
         }
 
@@ -312,7 +336,6 @@ public class UserHomepageController {
         selectedRoute.setStopOverLocation(newStopOver);
 
         if (startOrEndChanged) {
-            // Regenerate estimated time and alternative routes
             String newEstimatedTime = RouteIDGenerator.generateRandomEstTime();
             String newAlternativeRoutes = RouteIDGenerator.generateRandomAlternativeRoute(
                 newStartPoint, newEndPoint, getAllLocations()
@@ -322,18 +345,17 @@ public class UserHomepageController {
             selectedRoute.setAlternativeRoutes(newAlternativeRoutes);
         }
 
-    System.out.println("Updating route: " + selectedRoute);
+        boolean success = UserService.updateUserRoute(selectedRoute);
+        showAlert(success ? "Success" : "Error",
+                success ? "Route details updated successfully!" : "Failed to update route details.",
+                success ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR);
 
-    boolean success = UserService.updateUserRoute(selectedRoute);
-    showAlert(success ? "Success" : "Error",
-            success ? "Route details updated successfully!" : "Failed to update route details.",
-            success ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR);
-
-    if (success) {
-        loadRoutes(); 
-        routeTable.refresh(); 
+        if (success) {
+            loadRoutes();
+            routeTable.refresh();
+        }
     }
-}
+
     @FXML
     private void handleDeleteRouteButtonClick(ActionEvent event) {
         UserRouteDetails selectedRoute = routeTable.getSelectionModel().getSelectedItem();
@@ -384,22 +406,44 @@ public class UserHomepageController {
             return;
         }
 
+        if (startLoc.equalsIgnoreCase(endLoc)) {
+            showAlert("Invalid Selection", "Start and End locations cannot be the same.", AlertType.WARNING);
+            return;
+        }
+
         if (accountId == 0) {
             showAlert("Error", "User account ID is not set. Please log in again.", AlertType.ERROR);
             return;
         }
 
-        Time inputTimeValue = Time.valueOf(inputTime.getValue() + ":00");
+        try {
+            Time inputTimeValue = Time.valueOf(inputTime.getValue() + ":00");
 
-        UserDatabaseHandler.getInstance().insertPlannedDrive(accountId, planDate, inputTimeValue, startLoc, endLoc);
-        loadPlannedDrives();
-        showAddSuccess();
+            // Ensure location list is available before adding to database
+            ObservableList<String> observableLocationList = UserService.getAllLocations();
+            if (observableLocationList == null || observableLocationList.isEmpty()) {
+                showAlert("Error", "Location list is empty or not loaded. Please try again.", AlertType.ERROR);
+                return;
+            }
+
+            UserDatabaseHandler.getInstance().insertPlannedDrive(accountId, planDate, inputTimeValue, startLoc, endLoc);
+            loadPlannedDrives();
+            showAddSuccess();
+
+            // Clear input fields after successful addition
+            planStartLoc.setValue(null);
+            planEndLoc.setValue(null);
+            dateInput.setValue(null);
+            inputTime.setValue(null);
+        } catch (Exception e) {
+            showAlert("Error", "Invalid time input. Please enter a valid time.", AlertType.ERROR);
+        }
     }
+
 
     private void showAddSuccess() {
-        showAlert("Success", "Planned drives added successfully!", Alert.AlertType.INFORMATION);
+        showAlert("Success", "Planned drive added successfully!", Alert.AlertType.INFORMATION);
     }
-
 
 
     @FXML
@@ -444,6 +488,8 @@ public class UserHomepageController {
             Date newDate = planCalendar.getCellData(selectedDrive);
             String newTimeText = planTime.getCellData(selectedDrive) != null
                                 ? planTime.getCellData(selectedDrive).toString() : "";
+            String newStartLoc = selectedDrive.getStartLoc();
+            String newEndLoc = selectedDrive.getPinnedLoc();
 
             if (newDate == null) {
                 showAlert("Invalid Date", "Please select a date.", Alert.AlertType.WARNING);
@@ -456,6 +502,11 @@ public class UserHomepageController {
 
             if (newTimeText.isEmpty()) {
                 showAlert("Invalid Time", "Please enter a time.", Alert.AlertType.WARNING);
+                return;
+            }
+
+            if (newStartLoc != null && newEndLoc != null && newStartLoc.equalsIgnoreCase(newEndLoc)) {
+                showAlert("Invalid Selection", "Start and End locations cannot be the same.", Alert.AlertType.WARNING);
                 return;
             }
             try {
@@ -535,15 +586,15 @@ public class UserHomepageController {
         alert.showAndWait();
     }
 
-    private Button activeButton = null; // Track the currently active button
+    private Button activeButton = null; 
 
     public void setActiveButton(Button button) {
         if (activeButton != null) {
-            activeButton.getStyleClass().remove("active"); // Remove "active" from the previous button
+            activeButton.getStyleClass().remove("active"); 
         }
 
-        button.getStyleClass().add("active"); // Add "active" to the clicked button
-        activeButton = button; // Update the active button
+        button.getStyleClass().add("active"); 
+        activeButton = button; 
     }
 
     public void handleSignOut(ActionEvent event) throws IOException {

@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,9 +23,9 @@ public class CreateAccountController {
         String email = createEmailTF.getText().trim();
         String firstname = firstnameTF.getText().trim();
         String lastname = lastnameTF.getText().trim();
-        String birthdate = (birthdatePicker.getValue() != null) ? birthdatePicker.getValue().toString() : "";
+        LocalDate birthdate = birthdatePicker.getValue();
 
-        if (username.isEmpty() || password.isEmpty() || email.isEmpty() || birthdate.isEmpty()) {
+        if (username.isEmpty() || password.isEmpty() || email.isEmpty() || birthdate == null) {
             showError("Please fill in all fields.");
             return;
         }
@@ -33,8 +34,12 @@ public class CreateAccountController {
             showError("Please enter a valid email address (must be @gmail.com or @yahoo.com).");
             return;
         }
+        if (!birthdate.isBefore(LocalDate.now())) {
+            showError("Please select a valid Birthdate.");
+            return;
+        }
 
-        if (dbHandler.insertUser(username, password, email, birthdate, firstname, lastname)) {
+        if (dbHandler.insertUser(username, password, email, birthdate.toString(), firstname, lastname)) {
             showSuccessPopup(); // Call success pop-up
         } else {
             showError("User already exists or database error occurred.");

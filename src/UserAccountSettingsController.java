@@ -123,7 +123,7 @@ public class UserAccountSettingsController implements Initializable {
             firstNameField.setText(currentUser.getFirstName());
             lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
             lastNameField.setText(currentUser.getLastName());
-            birthdayPicker.setValue(LocalDate.parse(currentUser.getBirthDate()));
+            birthdayPicker.setValue(currentUser.getBirthDate());
                     
             System.out.println("5. Text field values after setting:");
             System.out.println("   Username: " + usernameField.getText());
@@ -144,7 +144,11 @@ public class UserAccountSettingsController implements Initializable {
             if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
                 showErrorAlert("Please input a valid Email. Only Gmail and Yahoo addresses are allowed.");
                 return; 
-            }            
+            }       
+            if (birthdayPicker.getValue() != null && birthdayPicker.getValue().isAfter(LocalDate.now())) {
+                showErrorAlert("Invalid Birthdate. Please select a valid date of birth.");
+                return;
+            }     
             if (!usernameField.getText().isEmpty()) {
                         currentUser.setUsername(usernameField.getText());
             }
@@ -161,13 +165,12 @@ public class UserAccountSettingsController implements Initializable {
                         currentUser.setLastName(lastNameField.getText());
             }
             if (birthdayPicker.getValue() != null) {
-                        currentUser.setBirthDate(birthdayPicker.getValue().toString());
+                        currentUser.setBirthDate(birthdayPicker.getValue());
             }
                     
             boolean success = AdminService.updateUser(currentUser);
             if (success) {
                 showSuccessAlert("Account details updated successfully!");
-                        // Update prompt text to reflect changes
                     updatePromptText();
             } else {
                 showErrorAlert("Failed to update account details");

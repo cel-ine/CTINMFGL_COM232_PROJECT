@@ -43,7 +43,8 @@ public class AdminHomepageController {
     @FXML private StackPane accountManagerPane;
     @FXML private Button accmngraddUserBTN, back2dashboardBTN, AccMngrUpdateBTN, AccMngrDeleteBTN;
     @FXML private TableView<AdminUser> AccMngrTable;
-    @FXML private TableColumn<AdminUser, String> emailCol1, usernameCol1, passwordCol, birthdateCol, firstNameCol, lastNameCol;
+    @FXML private TableColumn<AdminUser, String> emailCol1, usernameCol1, passwordCol, firstNameCol, lastNameCol;
+    @FXML private TableColumn<AdminUser, LocalDate> birthdateCol;
     @FXML private TableColumn<AdminUser, Integer> accIDCol;
     @FXML private TextField searchTF;
 
@@ -102,7 +103,7 @@ public class AdminHomepageController {
         firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         AccMngrTable.setItems(accountsList);
-        TableEditor.makeTableEditable(emailCol1, usernameCol1, passwordCol, firstNameCol, lastNameCol);
+        TableEditor.makeTableEditable(emailCol1, usernameCol1, passwordCol, birthdateCol, firstNameCol, lastNameCol);
         AccMngrTable.setEditable(true);
         searchTF.textProperty().addListener((observable, oldValue, newValue) -> filterUsers(newValue));
         loadAccountManagerData();
@@ -122,7 +123,7 @@ public class AdminHomepageController {
         endPointCol.setCellFactory(ComboBoxTableCell.forTableColumn(locationOptions));
         stopOverCol.setCellFactory(ComboBoxTableCell.forTableColumn(stopOverLocOptions));
         routesManagerTable.setItems(savedRoutesList);
-        TableEditor.makeRoutesTableEditable(startPointCol, endPointCol, stopOverCol);
+        TableEditor.makeRoutesTableEditable(routesManagerTable, startPointCol, endPointCol, stopOverCol);
         routesManagerTable.setEditable(true);
         routeSearchTF.textProperty().addListener((observable, oldValue, newValue) -> filterUsersRoutes(newValue));
         loadRouteManagerData();
@@ -135,7 +136,7 @@ public class AdminHomepageController {
         pdStartLocCol.setCellValueFactory(new PropertyValueFactory<>("startLoc"));
         pdPinnedLocCol.setCellValueFactory(new PropertyValueFactory<>("pinnedLoc"));
         plannedDrivesManagerTable.setItems(plannedDrivesList);
-        TableEditor.makePlannedDrivesTableEditable(pdPinnedLocCol, pdStartLocCol, pdCalendarCol, pdPlannedTimeCol); 
+        TableEditor.makePlannedDrivesTableEditable(plannedDrivesManagerTable, pdPinnedLocCol, pdStartLocCol, pdCalendarCol, pdPlannedTimeCol); 
         plannedDrivesManagerTable.setEditable(true);
         searchPlannedDrivesTF.textProperty().addListener((observable, oldValue, newValue) -> filterUsersPlannedDrive(newValue));
         loadPlannedDrivesData();
@@ -264,16 +265,35 @@ public class AdminHomepageController {
     @FXML
     private void handleUpdateButton(ActionEvent event) { 
         AdminUser selectedUser = AccMngrTable.getSelectionModel().getSelectedItem();
+        LocalDate newBirthdate = selectedUser.getBirthDate();
+
         if (selectedUser != null) {
             String newEmail = selectedUser.getEmail();
+            String newUsername = selectedUser.getUsername();
+
             if (!AdminService.isValidEmail(newEmail)) {
                 showAlert("Invalid Email", "Please enter a valid email address.", Alert.AlertType.WARNING);
-                return; 
+                return;
             }
+
+            if (AdminService.isDuplicateEmail(newEmail, selectedUser.getAccID())) {
+                showAlert("Duplicate Email", "This email is already in use. Please use another one.", Alert.AlertType.WARNING);
+                return;
+            }
+            if (AdminService.isDuplicateUsername(newUsername, selectedUser.getAccID())) {
+                showAlert("Duplicate Username", "This username is already taken. Choose a different one.", Alert.AlertType.WARNING);
+                return;
+            }
+            if (newBirthdate != null && !newBirthdate.isBefore(LocalDate.now())) {
+                showAlert("Invalid Birthdate", "Please input a valid date of birth.", Alert.AlertType.WARNING);
+                return;
+            }
+
             boolean success = AdminService.updateUser(selectedUser);
             showAlert(success ? "Success" : "Error",
                     success ? "User details updated successfully!" : "Failed to update user details.",
                     success ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR);
+            
             if (success) {
                 loadAccountManagerData();
             }
@@ -281,6 +301,7 @@ public class AdminHomepageController {
             showAlert("Warning", "No user selected for update.", Alert.AlertType.WARNING);
         }
     }
+
     @FXML
     private void openAddUserPopup(ActionEvent event) { //ACC MANAGER - ADD
         try {
@@ -393,6 +414,7 @@ public class AdminHomepageController {
         routesManagerTable.refresh(); 
     }
 }
+
 
     // 🎀🎀🎀 PLANNED DRIVES
     @FXML

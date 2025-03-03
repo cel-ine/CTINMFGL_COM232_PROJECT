@@ -53,7 +53,7 @@ public class UserTableEditor {
 
         stopOverRouteLoc.setOnEditCommit(event -> {
             UserRouteDetails route = event.getRowValue();
-            route.setAlternativeRoutes(event.getNewValue());
+            route.setStopOverLocation(event.getNewValue());
             editedRoutes.add(route);
         });
         }

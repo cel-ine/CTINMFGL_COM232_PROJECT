@@ -133,7 +133,7 @@ public class AdminService {
                     rs.getString("email"),
                     rs.getString("username"),
                     rs.getString("passwords"),
-                    rs.getString("birthdate"),
+                    rs.getDate("birthdate").toLocalDate(),
                     rs.getString("first_name"),
                     rs.getString("last_name")
                 );
@@ -159,6 +159,56 @@ public class AdminService {
         }
         return null;
     }
+
+    // VALIDATION
+    public static boolean isDuplicateEmail(String email, int userId) {
+        String query = "SELECT COUNT(*) FROM WazeAccounts WHERE email = ? AND account_id != ?";
+        try (Connection conn = DatabaseHandler.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, email);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true; // Duplicate found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // No duplicate
+    }
+    
+    public static boolean isDuplicateUsername(String username, int userId) {
+        String query = "SELECT COUNT(*) FROM WazeAccounts WHERE username = ? AND account_id != ?";
+        try (Connection conn = DatabaseHandler.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true; // Duplicate found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // No duplicate
+    }
+    public static boolean isDuplicateRoute(String startPoint, String endPoint, int routeID) {
+        String query = "SELECT COUNT(*) FROM WazeRoutes WHERE route_startpoint = ? AND route_endpoint = ? AND routeID != ?";
+        try (Connection conn = DatabaseHandler.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, startPoint);
+            stmt.setString(2, endPoint);
+            stmt.setInt(3, routeID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true; // Duplicate route found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; 
+    }
+    
 }
 
 

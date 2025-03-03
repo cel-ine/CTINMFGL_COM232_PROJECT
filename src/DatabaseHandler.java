@@ -169,7 +169,7 @@ public class DatabaseHandler {
                 String email = result.getString("email");  // FIXED CASE
                 String username = result.getString("username");  // FIXED CASE
                 String password = result.getString("passwords");  // FIXED CASE
-                String birthdate = result.getString("birthdate");  // FIXED CASE
+                LocalDate birthdate = LocalDate.parse(result.getString("birthdate"));  // FIXED CASE
                 String firstName = result.getString("first_name");  // FIXED CASE
                 String lastName = result.getString("last_name");  // FIXED CASE
 
@@ -258,7 +258,7 @@ public class DatabaseHandler {
             pstmt.setString(1, newUser.getEmail());
             pstmt.setString(2, newUser.getUsername());
             pstmt.setString(3, newUser.getPassword());
-            pstmt.setString(4, newUser.getBirthDate());
+            pstmt.setString(4, newUser.getBirthDate().toString());
             pstmt.setString(5, newUser.getFirstName());
             pstmt.setString(6, newUser.getLastName());
             int affectedRows = pstmt.executeUpdate();
@@ -290,7 +290,7 @@ public class DatabaseHandler {
         }
     }
     public static boolean updateUserDetails(AdminUser user) {
-        String updateUser = "UPDATE wazeaccounts SET email = ?, username = ?, passwords = ?, first_name = ?, last_name = ? WHERE account_id = ?";
+        String updateUser = "UPDATE wazeaccounts SET email = ?, username = ?, passwords = ?, birthdate = ?, first_name = ?, last_name = ? WHERE account_id = ?";
         Connection conn = null; 
     
         try {
@@ -301,9 +301,10 @@ public class DatabaseHandler {
                 stmt.setString(1, user.getEmail());
                 stmt.setString(2, user.getUsername());
                 stmt.setString(3, user.getPassword());
-                stmt.setString(4, user.getFirstName());
-                stmt.setString(5, user.getLastName());
-                stmt.setInt(6, user.getAccID());
+                stmt.setString(4, user.getBirthDate().toString());
+                stmt.setString(5, user.getFirstName());
+                stmt.setString(6, user.getLastName());
+                stmt.setInt(7, user.getAccID());
                 stmt.executeUpdate();
             }
     
@@ -577,5 +578,23 @@ public class DatabaseHandler {
         }
         return false;
     }
+
+    //OTHER VALIDATIONS
+    // public static boolean routeExists(int accountID, String startPoint, String endPoint) {
+    //     String query = "SELECT COUNT(*) FROM WazeRoutes WHERE account_id = ? AND route_startpoint = ? AND route_endpoint = ?";
+    //     try (Connection conn = getNewConnection();
+    //          PreparedStatement pstmt = conn.prepareStatement(query)) {
+    //         pstmt.setInt(1, accountID);
+    //         pstmt.setString(2, startPoint);
+    //         pstmt.setString(3, endPoint);
+    //         ResultSet rs = pstmt.executeQuery();
+    //         if (rs.next()) {
+    //             return rs.getInt(1) > 0;
+    //         }
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();
+    //     }
+    //     return false;
+    // } 
 
 }

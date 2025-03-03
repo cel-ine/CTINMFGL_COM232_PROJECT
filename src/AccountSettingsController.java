@@ -67,15 +67,20 @@ public class AccountSettingsController implements Initializable {
             
             usernameField.setPromptText("Username: " + currentUser.getUsername());
             usernameField.setText(currentUser.getUsername());
+           
             emailField.setPromptText("Email: " + currentUser.getEmail());
             emailField.setText(currentUser.getEmail());
+            
             passwordField.setPromptText("Password: " + currentUser.getPassword());
             passwordField.setText(currentUser.getPassword());
+           
             firstNameField.setPromptText("First Name: " + currentUser.getFirstName());
             firstNameField.setText(currentUser.getFirstName());
+            
             lastNameField.setPromptText("Last Name: " + currentUser.getLastName());
             lastNameField.setText(currentUser.getLastName());
-            birthdayPicker.setValue(LocalDate.parse(currentUser.getBirthDate()));
+            
+            birthdayPicker.setValue(currentUser.getBirthDate());
             
             System.out.println("5. Text field values after setting:");
             System.out.println("   Username: " + usernameField.getText());
@@ -92,11 +97,21 @@ public class AccountSettingsController implements Initializable {
     private void handleSaveAccountDetails(ActionEvent event) {
         if (validateInput()) {
             String email = emailField.getText().trim();
-    
+
             if (!email.matches("^[A-Za-z0-9._%+-]+@(gmail\\.com|yahoo\\.com)$")) {
                 showErrorAlert("Please input a valid Email. Only Gmail and Yahoo addresses are allowed.");
                 return; 
             }
+
+            if (birthdayPicker.getValue() != null) {
+                LocalDate birthdate = birthdayPicker.getValue();
+                if (!birthdate.isBefore(LocalDate.now())) {
+                    showErrorAlert("Please select a valid Birthdate. Birthdate cannot be today or in the future.");
+                    return;
+                }
+                currentUser.setBirthDate(birthdate);
+            }
+
             if (!usernameField.getText().isEmpty()) {
                 currentUser.setUsername(usernameField.getText());
             }
@@ -112,10 +127,7 @@ public class AccountSettingsController implements Initializable {
             if (!lastNameField.getText().isEmpty()) {
                 currentUser.setLastName(lastNameField.getText());
             }
-            if (birthdayPicker.getValue() != null) {
-                currentUser.setBirthDate(birthdayPicker.getValue().toString());
-            }
-    
+
             boolean success = AdminService.updateUser(currentUser);
             if (success) {
                 showSuccessAlert("Account details updated successfully!");

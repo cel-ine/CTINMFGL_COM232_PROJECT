@@ -1,8 +1,10 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -19,18 +21,42 @@ public class TableEditor {
 
     //ACCOUNTS
     public static void makeTableEditable(TableColumn<AdminUser, String> emailCol1,
-                                         TableColumn<AdminUser, String> usernameCol1,
-                                         TableColumn<AdminUser, String> passwordCol,
-                                         TableColumn<AdminUser, String> firstNameCol,
-                                         TableColumn<AdminUser, String> lastNameCol) {
+                                     TableColumn<AdminUser, String> usernameCol1,
+                                     TableColumn<AdminUser, String> passwordCol,
+                                     TableColumn<AdminUser, LocalDate> birthdateCol,
+                                     TableColumn<AdminUser, String> firstNameCol,
+                                     TableColumn<AdminUser, String> lastNameCol) {
 
-        // Enable text editing for specified columns
-        emailCol1.setCellFactory(TextFieldTableCell.forTableColumn());
-        usernameCol1.setCellFactory(TextFieldTableCell.forTableColumn());
-        passwordCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        lastNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    // Enable text editing for specified columns
+    emailCol1.setCellFactory(TextFieldTableCell.forTableColumn());
+    usernameCol1.setCellFactory(TextFieldTableCell.forTableColumn());
+    passwordCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    lastNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
 
+    // Custom cell factory for birthdateCol with DatePicker
+    birthdateCol.setCellFactory(column -> new TableCell<>() {
+        private final DatePicker datePicker = new DatePicker();
+
+        {
+            datePicker.setOnAction(event -> {
+                AdminUser user = getTableView().getItems().get(getIndex());
+                user.setBirthDate(datePicker.getValue()); // Update model
+                getTableView().refresh(); // Refresh table
+            });
+        }
+
+        @Override
+        protected void updateItem(LocalDate item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setGraphic(null);
+            } else {
+                datePicker.setValue(item);
+                setGraphic(datePicker);
+            }
+        }
+    });
         // Track changes
         emailCol1.setOnEditCommit(event -> {
             AdminUser user = event.getRowValue();
@@ -68,29 +94,44 @@ public class TableEditor {
     }
     // ROUTES
     public static void makeRoutesTableEditable(
-            TableColumn<AdminRoutes, String> startPointCol,
-            TableColumn<AdminRoutes, String> endPointCol,
-            TableColumn<AdminRoutes, String> stopOverCol) {
+        TableView<AdminRoutes> routesManagerTable,
+        TableColumn<AdminRoutes, String> startPointCol,
+        TableColumn<AdminRoutes, String> endPointCol,
+        TableColumn<AdminRoutes, String> stopOverCol) {
 
         ObservableList<String> locationOptions = FXCollections.observableArrayList(AdminService.getAllLocations());
         ObservableList<String> stopOverOptions = FXCollections.observableArrayList(AdminService.getAllStopovers());
 
-        
         startPointCol.setCellFactory(ComboBoxTableCell.forTableColumn(locationOptions));
         endPointCol.setCellFactory(ComboBoxTableCell.forTableColumn(locationOptions));
         stopOverCol.setCellFactory(ComboBoxTableCell.forTableColumn(stopOverOptions));
 
-        
         startPointCol.setOnEditCommit(event -> {
             AdminRoutes route = event.getRowValue();
-            route.setRoute_startpoint(event.getNewValue());
-            editedRoutes.add(route); 
+            String newStart = event.getNewValue();
+
+            if (newStart != null && newStart.equalsIgnoreCase(route.getRoute_endpoint())) {
+                showAlert("Error", "Start and end locations cannot be the same.", Alert.AlertType.ERROR);
+                routesManagerTable.refresh();  // Prevents invalid input from being saved
+                return;
+            }
+
+            route.setRoute_startpoint(newStart);
+            editedRoutes.add(route);
         });
 
         endPointCol.setOnEditCommit(event -> {
             AdminRoutes route = event.getRowValue();
-            route.setRoute_endpoint(event.getNewValue());
-            editedRoutes.add(route); 
+            String newEnd = event.getNewValue();
+
+            if (newEnd != null && newEnd.equalsIgnoreCase(route.getRoute_startpoint())) {
+                showAlert("Error", "Start and end locations cannot be the same.", Alert.AlertType.ERROR);
+                routesManagerTable.refresh();  // Prevents invalid input from being saved
+                return;
+            }
+
+            route.setRoute_endpoint(newEnd);
+            editedRoutes.add(route);
         });
 
         stopOverCol.setOnEditCommit(event -> {
@@ -110,6 +151,7 @@ public class TableEditor {
 
     // 🟢 Planned Drives Table (Editable: DatePicker + Time TextField + ComboBoxes)
     public static void makePlannedDrivesTableEditable(
+            TableView<AdminPlannedDrives>plannedDrivesManagerTable,
             TableColumn<AdminPlannedDrives, String> pdPinnedLocCol,
             TableColumn<AdminPlannedDrives, String> pdStartLocCol,
             TableColumn<AdminPlannedDrives, LocalDate> pdCalendarCol,
@@ -117,25 +159,24 @@ public class TableEditor {
 
         ObservableList<String> locationOptions = FXCollections.observableArrayList(AdminService.getAllLocations());
 
-        // ✅ Location ComboBox columns
         pdPinnedLocCol.setCellFactory(ComboBoxTableCell.forTableColumn(locationOptions));
         pdStartLocCol.setCellFactory(ComboBoxTableCell.forTableColumn(locationOptions));
 
-        // 📅 DatePicker column (Planned Date)
+
         pdCalendarCol.setCellFactory(column -> new TableCell<AdminPlannedDrives, LocalDate>() {
             private final DatePicker datePicker = new DatePicker();
         
             {
                 datePicker.setOnAction(event -> {
                     LocalDate newDate = datePicker.getValue();
-                    commitEdit(newDate); // 🔥 Key line to commit the edit
+                    commitEdit(newDate);
                     updateModel(newDate);
                 });
             }
         
             private void updateModel(LocalDate newDate) {
                 AdminPlannedDrives drive = getTableView().getItems().get(getIndex());
-                drive.setPlannedDate(newDate);  // ✅ Update model immediately
+                drive.setPlannedDate(newDate); 
                 editedPlannedDrives.add(drive);
             }
         
@@ -154,13 +195,11 @@ public class TableEditor {
             public void startEdit() {
                 super.startEdit();
                 if (!isEmpty()) {
-                    datePicker.requestFocus();  // ✅ Focus picker on edit
+                    datePicker.requestFocus();  
                 }
             }
         });
         
-
-        // ⏰ Time TextField column (Planned Time) with validation
         pdPlannedTimeCol.setCellFactory(column -> new TableCell<AdminPlannedDrives, LocalTime>() {
             private final TextField textField = new TextField();
 
@@ -199,19 +238,34 @@ public class TableEditor {
             }
         });
 
-        // 🔄 On edit commit handlers
         pdPinnedLocCol.setOnEditCommit(event -> {
             AdminPlannedDrives drive = event.getRowValue();
-            drive.setPinnedLoc(event.getNewValue());
+            String newPinnedLoc = event.getNewValue();
+    
+            if (newPinnedLoc != null && newPinnedLoc.equalsIgnoreCase(drive.getStartLoc())) {
+                showAlert("Error", "Pinned location and start location cannot be the same.", Alert.AlertType.ERROR);
+                plannedDrivesManagerTable.refresh();
+                return;
+            }
+    
+            drive.setPinnedLoc(newPinnedLoc);
             editedPlannedDrives.add(drive);
         });
-
+    
         pdStartLocCol.setOnEditCommit(event -> {
             AdminPlannedDrives drive = event.getRowValue();
-            drive.setStartLoc(event.getNewValue());
+            String newStartLoc = event.getNewValue();
+    
+            if (newStartLoc != null && newStartLoc.equalsIgnoreCase(drive.getPinnedLoc())) {
+                showAlert("Error", "Start location and pinned location cannot be the same.", Alert.AlertType.ERROR);
+                plannedDrivesManagerTable.refresh();
+                return;
+            }
+            
+            drive.setStartLoc(newStartLoc);
             editedPlannedDrives.add(drive);
         });
-
+    
         pdPlannedTimeCol.setOnEditCommit(event -> {
             AdminPlannedDrives drive = event.getRowValue();
             drive.setPlannedTime(event.getNewValue());
@@ -224,7 +278,15 @@ public class TableEditor {
             editedPlannedDrives.add(drive);
         });
     }
-
+    
+    
+    private static void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     public static Set<AdminPlannedDrives> getEditedPlannedDrives() {
     return editedPlannedDrives;

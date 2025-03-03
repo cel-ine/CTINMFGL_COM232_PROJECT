@@ -61,31 +61,35 @@ public class AddPlannedDrivePopupController {
         String prefTimeText = prefTimeTextField.getText().trim();
         String startLoc = startComboBox.getValue();
         String endLoc = endComboBox.getValue();
-
+    
         if (accountID == null || calendar == null || prefTimeText.isEmpty() || startLoc == null || endLoc == null) {
             showAlert("Error", "Please fill in all fields.", Alert.AlertType.ERROR);
             return;
         }
-
-        // 🔍 Debugging: Print selected and current date
+    
+        // 🚨 Validation: Prevent same start and end locations
+        if (startLoc.equalsIgnoreCase(endLoc)) {
+            showAlert("Invalid Selection", "Start and end locations cannot be the same.", Alert.AlertType.WARNING);
+            return;
+        }
+    
         System.out.println("Selected Date: " + calendar);
         System.out.println("Today's Date: " + LocalDate.now());
-
-        // 🔥 Validation: Ensure the selected date is today or in the future
+    
         if (calendar.isBefore(LocalDate.now())) {
             showAlert("Invalid Date", "You cannot select a past date.", Alert.AlertType.WARNING);
             return;
         }
-
+    
         try {
             LocalTime enteredTime = LocalTime.parse(prefTimeText, timeFormatter);
         } catch (DateTimeParseException e) {
             showAlert("Invalid Time", "Time format should be HH:MM.", Alert.AlertType.WARNING);
             return;
         }
-
+    
         LocalTime plannedTime = LocalTime.parse(prefTimeText, timeFormatter);
-
+    
         AdminPlannedDrives newPlannedDrive = new AdminPlannedDrives(
             Integer.parseInt(accountID.split(" - ")[0]),
             calendar,
@@ -93,9 +97,9 @@ public class AddPlannedDrivePopupController {
             startLoc,
             endLoc
         );
-
+    
         boolean success = AdminService.addPlannedDrive(newPlannedDrive);
-
+    
         if (success) {
             showSuccessPopup();
             if (adminHomepageController != null) {
@@ -106,6 +110,7 @@ public class AddPlannedDrivePopupController {
             showAlert("Error", "Failed to add planned drive. Please try again.", Alert.AlertType.ERROR);
         }
     }
+    
 
     private void closeWindow() {
         Stage stage = (Stage) savePlannedDriveBTN.getScene().getWindow();

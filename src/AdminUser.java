@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 public class AdminUser {
     private static AdminUser currentUser;
     private int acc_id;
@@ -6,11 +8,11 @@ public class AdminUser {
     private String email;
     private String firstname;
     private String lastname;
-    private String birthday;
+    private LocalDate  birthday;
     private String lastLogIn; 
     private String oldUsername;
     //constructor
-    public AdminUser(int acc_id, String email, String username, String password, String birthday,  String firstname, String lastname ) {
+    public AdminUser(int acc_id, String email, String username, String password, LocalDate birthday,  String firstname, String lastname ) {
         this.acc_id = acc_id;
         this.username = username;
         this.password = password;
@@ -19,7 +21,7 @@ public class AdminUser {
         this.lastname = lastname;
         this.birthday = birthday;
     }
-    public AdminUser(String email, String username, String password, String birthday,  String firstname, String lastname ) {
+    public AdminUser(String email, String username, String password, LocalDate birthday,  String firstname, String lastname ) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -98,11 +100,11 @@ public class AdminUser {
         this.lastname = lastname;
     }
 
-    public String getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthday;
     }
 
-    public void setBirthDate(String birthday) {
+    public void setBirthDate(LocalDate  birthday) {
         this.birthday = birthday;
     }
     public String getOldUsername() {

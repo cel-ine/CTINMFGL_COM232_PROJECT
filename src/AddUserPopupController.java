@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -25,34 +27,49 @@ public class AddUserPopupController {
         String email = emailField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText();
-        String birthdate = (birthdatePicker.getValue() != null) ? birthdatePicker.getValue().toString() : "";
+        LocalDate birthdate = (birthdatePicker.getValue() != null) ? birthdatePicker.getValue() : null;
         String firstName = firstNameField.getText();
         String lastName = lastNameField.getText();
 
-        if (!email.isEmpty() && !username.isEmpty() && !password.isEmpty() && !birthdate.isEmpty() &&
-            !firstName.isEmpty() && !lastName.isEmpty()) {
+        if (email.isEmpty() || username.isEmpty() || password.isEmpty() || birthdate == null ||
+            firstName.isEmpty() || lastName.isEmpty()) {
+            showAlert("Warning", "Please fill in all fields.", Alert.AlertType.WARNING);
+            return;
+        }
 
-            if (!isValidEmail(email)) {
-                showAlert("Invalid Email", "Please enter a valid email address.", Alert.AlertType.WARNING);
-                return;
-            }
+        if (!isValidEmail(email)) {
+            showAlert("Invalid Email", "Please enter a valid email address.", Alert.AlertType.WARNING);
+            return;
+        }
 
-            AdminUser newUser = new AdminUser(email, username, password, birthdate, firstName, lastName);
-            boolean success = AdminService.addUser(newUser);
+        if (AdminService.isDuplicateEmail(email, -1)) { // -1 means it's a new user (not updating)
+            showAlert("Duplicate Email", "This email is already in use. Please use another one.", Alert.AlertType.WARNING);
+            return;
+        }
+        if (AdminService.isDuplicateUsername(username, -1)) {
+            showAlert("Duplicate Username", "This username is already taken. Choose a different one.", Alert.AlertType.WARNING);
+            return;
+        }
 
-            if (success) {
-                showSuccessPopup(); 
-                closeWindow();
-                if (adminHomepageController != null) {
-                    adminHomepageController.loadAccountManagerData();
-                }
-            } else {
-                showAlert("Error", "User already exists or database error occurred.", Alert.AlertType.ERROR);
+        if (birthdate != null && !birthdate.isBefore(LocalDate.now())) {
+            showAlert("Invalid Birthdate", "Please input a valid birthdate.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        AdminUser newUser = new AdminUser(email, username, password, birthdate, firstName, lastName);
+        boolean success = AdminService.addUser(newUser);
+
+        if (success) {
+            showSuccessPopup();
+            closeWindow();
+            if (adminHomepageController != null) {
+                adminHomepageController.loadAccountManagerData();
             }
         } else {
-            showAlert("Warning", "Please fill in all fields.", Alert.AlertType.WARNING);
+            showAlert("Error", "Failed to add user. Please try again.", Alert.AlertType.ERROR);
         }
     }
+
 
     private boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
